@@ -3,9 +3,10 @@ import sqlalchemy
 from sqlalchemy import orm
 
 from .db_session import SqlAlchemyBase
+from flask_login import UserMixin
+from sqlalchemy_serializer import SerializerMixin
 
-
-class News(SqlAlchemyBase):
+class News(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'news'
 
     categories = orm.relationship("Category",
