@@ -1,17 +1,15 @@
 import datetime
 import sqlalchemy
 from sqlalchemy import orm
+from sqlalchemy_serializer import SerializerMixin
+from flask_login import UserMixin
 
 from .db_session import SqlAlchemyBase
-from flask_login import UserMixin
-from sqlalchemy_serializer import SerializerMixin
+
 
 class News(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'news'
 
-    categories = orm.relationship("Category",
-                                  secondary="association",
-                                  backref="news")
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     content = sqlalchemy.Column(sqlalchemy.String, nullable=True)
@@ -20,3 +18,5 @@ class News(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     user = orm.relationship('User')
+    categories = orm.relationship("Category", secondary="association", backref="news")
+    is_published = sqlalchemy.Column(sqlalchemy.Boolean, default=True)

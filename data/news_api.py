@@ -1,8 +1,8 @@
 import flask
+from flask import jsonify, make_response, request, abort
 
 from . import db_session
 from .news import News
-from flask import jsonify, make_response, request
 
 blueprint = flask.Blueprint(
     'news_api',
@@ -19,9 +19,7 @@ def get_news():
         {
             'news':
                 [item.to_dict(only=('title', 'content', 'user.name'))
-                 for item in news]
-        }
-    )
+                 for item in news]})
 
 
 @blueprint.route('/api/news/<int:news_id>', methods=['GET'])
@@ -30,7 +28,13 @@ def get_one_news(news_id):
     news = db_sess.query(News).get(news_id)
     if not news:
         return make_response(jsonify({'error': 'Not found'}), 404)
-    return jsonify({'news': news.to_dict(only=('title', 'content', 'user_id', 'is_private'))})
+    return jsonify(
+        {
+            'news': news.to_dict(only=(
+                'title', 'content', 'user_id', 'is_private'))
+        }
+    )
+
 
 
 @blueprint.route('/api/news', methods=['POST'])
@@ -52,6 +56,7 @@ def create_news():
     return jsonify({'id': news.id})
 
 
+
 @blueprint.route('/api/news/<int:news_id>', methods=['DELETE'])
 def delete_news(news_id):
     db_sess = db_session.create_session()
@@ -61,3 +66,10 @@ def delete_news(news_id):
     db_sess.delete(news)
     db_sess.commit()
     return jsonify({'success': 'OK'})
+
+
+def abort_if_news_not_found(news_id):
+    session = db_session.create_session()
+    news = session.query(News).get(news_id)
+    if not news:
+        abort(404, message=f"News {news_id} not found")
